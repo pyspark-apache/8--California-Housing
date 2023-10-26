@@ -198,7 +198,79 @@ housing_df.select([count(when(isnan(c) | col(c).isNull(), c)).alias(c) for c in 
 
 <hr>
 
-<a name="schema"></a>
+<a name="schema7"></a>
 
 # 7. Feature Engineering
 
+Now that we have adjusted the values in medianHouseValue, we will now add the following columns to the data set:
+
+- Rooms per household which refers to the number of rooms in households per block group;
+- Population per household, which basically gives us an indication of how many people live in households per block group; And
+- Bedrooms per room which will give us an idea about how many rooms are bedrooms per block group;
+
+As we're working with DataFrames, we can best use the `select()` method to select the columns that we're going to be working with, namely `totalRooms`, `households`, and `population`. Additionally, we have to indicate that we're working with columns by adding the col() function to our code. Otherwise, we won't be able to do element-wise operations like the division that we have in mind for these three variables:
+
+Now that we have adjusted the values in medianHouseValue, we will now add the following columns to the data set:
+
+- Rooms per household which refers to the number of rooms in households per block group;
+- Population per household, which basically gives us an indication of how many people live in households per block group; And
+- Bedrooms per room which will give us an idea about how many rooms are bedrooms per block group;
+
+As we're working with DataFrames, we can best use the `select()` method to select the columns that we're going to be working with, namely `totalRooms`, `households`, and `population`. Additionally, we have to indicate that we're working with columns by adding the col() function to our code. Otherwise, we won't be able to do element-wise operations like the division that we have in mind for these three variables:
+
+```
+# Add the new columns to df
+housing_df = (
+    housing_df.withColumn("rooms_per_hs", F.round(col("total_rooms")/col("houshlds"),2))
+    .withColumn("population_per_hs", F.round(col("population")/col("houshlds"),2))
+    .withColumn("bedrooms_per_rooms", F.round(col("total_bdrms")/col("total_rooms"),2))
+)
+```
+We can see that, for the first row, there are about 6.98 rooms per household, the households in the block group consist of about 2.5 people and the amount of bedrooms is quite low with 0.14:
+
+Since we don't want to necessarily standardize our target values, we'll want to make sure to isolate those in our data set. Note also that this is the time to leave out variables that we might not want to consider in our analysis. In this case, let's leave out variables such as longitude, latitude, housingMedianAge and totalRooms.
+
+In this case, we will use the `select()` method and passing the column names in the order that is more appropriate. In this case, the target variable medianHouseValue is put first, so that it won't be affected by the standardization.
+
+```
+# Re-order and select columns
+housing_df = housing_df.select("medhv",
+                               "total_bdrms",
+                               "population",
+                               "houshlds",
+                               "medinc",
+                               "rooms_per_hs",
+                               "population_per_hs",
+                               "bedrooms_per_rooms"
+                              )
+```
+## 7.1 Feature Extraction
+```
+featureCols = ["total_bdrms","population","houshlds","medinc","rooms_per_hs","population_per_hs",
+               "bedrooms_per_rooms"]
+```
+
+#### Use a VectorAssembler to put features into a feature vector column:
+```
+# put features into a feature vector column
+assembler = VectorAssembler(inputCols=featureCols, outputCol="features")
+
+assembler_df = assembler.transform(housing_df)
+```
+## 7.2 Standardization
+
+Next, we can finally scale the data using `StandardScaler`. The input columns are the `features`, and the output column with the rescaled that will be included in the scaled_df will be named `"features_scaled"`:
+
+```
+# Initialize the standardScaler
+standardScaler = StandardScaler(inputCol="features",outputCol="features_scaled")
+# Fit the DataFrame to the scaler
+scaled_df = standardScaler.fit(assembler_df).transform(assembler_df)
+
+```
+
+<hr>
+
+<a name="schema8"></a>
+
+# 8. Building A Machine Learning Model With Spark ML
