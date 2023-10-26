@@ -8,6 +8,7 @@
 4. [Load the data from a file into a DataFrame](#schema4)
 5. [Data Exploration](#schema5)
 6. [Data Preprocessing](#schema6)
+7. [Feature Engineering](#schema7)
 
 <hr>
 
@@ -182,9 +183,22 @@ Look at the minimum and maximum values of all the (numerical) attributes. We see
 
 # 6. Data Preprocessing
 
+First, let's start with the medianHouseValue, our dependent variable. To facilitate our working with the target values, we will express the house values in units of 100,000. That means that a target such as 452600.000000 should become 4.526:
+```
+housing_df = housing_df.withColumn("medhv",col("medhv")/100000)
+```
+NaN
+```
+from pyspark.sql.functions import col,isnan,when,count
+df_Columns = housing_df.columns
+housing_df.select([count(when(isnan(c) | col(c).isNull(), c)).alias(c) for c in df_Columns]
+   ).show()
+```
 
 
+<hr>
 
+<a name="schema"></a>
 
-
+# 7. Feature Engineering
 
