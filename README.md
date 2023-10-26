@@ -7,6 +7,7 @@
 3. [Creating the Spark Session](#schema3)
 4. [Load the data from a file into a DataFrame](#schema4)
 5. [Data Exploration](#schema5)
+6. [Data Preprocessing](#schema6)
 
 <hr>
 
@@ -144,3 +145,46 @@ housing_df.printSchema()
 <a name="schema5"></a>
 
 # 5. Data Exploration
+#### 5.1 Distribution of the median age of the people living in the area:
+```
+# groupBy dt by median_age and see the distribution
+result_df = housing_df.groupBy('median_age').count().sort("median_age",ascending = False)
+```
+
+```
+result_df.toPandas().plot.bar(x='median_age',figsize=(14,6))
+```
+![house1](./img/house1.png)
+Most of the residents are either in their youth or they settle here during their senior years. Some data are showing median age < 10 which seems to be out of place.
+
+#### 5.2 Summary Statistics:
+```
+housing_df.describe().select(
+    "summary",
+    F.round("median_age",4).alias('median_age'),
+    F.round('total_rooms',4).alias('total_rooms'),
+    F.round('total_bdrms',4).alias('total_bdrms'),
+    F.round('population',4).alias('population'),
+    F.round("houshlds", 4).alias("houshlds"),
+    F.round("medinc", 4).alias("medinc"),
+    F.round("medhv", 4).alias("medhv")
+).show()
+
+```
+Look at the minimum and maximum values of all the (numerical) attributes. We see that multiple attributes have a wide range of values: we will need to normalize your dataset.
+
+
+
+<hr>
+
+<a name="schema6"></a>
+
+
+# 6. Data Preprocessing
+
+
+
+
+
+
+
