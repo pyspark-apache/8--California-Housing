@@ -10,7 +10,7 @@
 6. [Data Preprocessing](#schema6)
 7. [Feature Engineering](#schema7)
 8. [Building A Machine Learning Model With Spark ML](#schema8)
-8. [Inspect the Model Co-efficients](#schema9)
+9. [Evaluating the Model ](#schema9)
 
 <hr>
 
@@ -304,4 +304,67 @@ linearModel = lr.fit(train_data)
 
 <a name="schema9"></a>
 
-# 9. Inspect the Model Co-efficients
+# 9. Evaluating the Model 
+
+```
+linearModel.coefficients
+```
+![house](./img/house3.png)
+```
+linearModel.intercept
+```
+![house](./img/house4.png)
+
+```
+coeff_df = pd.DataFrame({"Feature": ["Intercept"] + featureCols, "Co-efficients": np.insert(linearModel.coefficients.toArray(), 0, linearModel.intercept)})
+coeff_df = coeff_df[["Feature", "Co-efficients"]]
+```
+![house](./img/house5.png)
+
+## 9.2 Generating Predictions
+
+
+**Using the RegressionEvaluator from pyspark.ml package:**
+
+```
+evaluator = RegressionEvaluator(predictionCol="predmedhv", labelCol='medhv', metricName='rmse')
+```
+![house](./img/house6.png)
+
+```
+evaluator = RegressionEvaluator(predictionCol="predmedhv", labelCol='medhv', metricName='mae')
+```
+![house](./img/house7.png)
+```
+evaluator = RegressionEvaluator(predictionCol="predmedhv", labelCol='medhv', metricName='r2')
+
+```
+![house](./img/house8.png)
+
+
+**Using the RegressionEvaluator from pyspark.ml package:**
+
+```
+metrics = RegressionMetrics(predandlabels.rdd)
+```
+
+```
+print("RMSE: {0}".format(metrics.rootMeanSquaredError))
+```
+
+![house](./img/house9.png)
+
+
+```
+print("MAE: {0}".format(metrics.meanAbsoluteError))
+```
+![house](./img/house10.png)
+
+```
+
+print("Re: {0}".format(metrics.r2))
+```
+![house](./img/house11.png)
+
+There's definitely some improvements needed to our model! If we want to continue with this model, we can play around with the parameters that we passed to your model, the variables that we included in your original DataFrame.
+
