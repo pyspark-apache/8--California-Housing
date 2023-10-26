@@ -3,7 +3,10 @@
 
 
 1. [Understanding the Data Set](#schema1)
-2. [Understanding the Data Set](#schema2)
+2. [Import](#schema2)
+3. [Creating the Spark Session](#schema3)
+4. [Load the data from a file into a DataFrame](#schema4)
+5. [Data Exploration](#schema5)
 
 <hr>
 
@@ -86,3 +89,58 @@ rnd_seed=23
 np.random.seed=rnd_seed
 np.random.set_state=rnd_seed
 ```
+
+<hr>
+
+<a name="schema3"></a>
+
+## 3. Creating the Spark Session
+```
+spark = SparkSession.builder.master("local[2]").appName("Linear-Regression-California-Housing").getOrCreate()
+
+sc = spark.sparkContext
+```
+<hr>
+
+<a name="schema4"></a>
+
+##  4. Load the data from a file into a DataFrame
+```
+# define the schema, corresponding to a line in the csv data file.
+schema = StructType([
+    StructField("long", FloatType(), nullable=True),
+    StructField("lat", FloatType(), nullable=True),
+    StructField("medage", FloatType(), nullable=True),
+    StructField("totrooms", FloatType(), nullable=True),
+    StructField("totbdrms", FloatType(), nullable=True),
+    StructField("pop", FloatType(), nullable=True),
+    StructField("houshlds", FloatType(), nullable=True),
+    StructField("medinc", FloatType(), nullable=True),
+    StructField("medhv", FloatType(), nullable=True)]
+)
+```
+```
+# Load housing data
+housing_df = spark.read.csv(path='./data/cal_housing.data', schema=schema).cache()
+```
+```
+# Insepct first five rows
+housing_df.take(5)
+```
+```
+# Show first five rows
+housing_df.show(5)
+```
+```
+# show the dataframe columns
+housing_df.columns
+```
+```
+# show the schema of the dataframe
+housing_df.printSchema()
+```
+<hr>
+
+<a name="schema5"></a>
+
+# 5. Data Exploration
