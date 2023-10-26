@@ -9,6 +9,8 @@
 5. [Data Exploration](#schema5)
 6. [Data Preprocessing](#schema6)
 7. [Feature Engineering](#schema7)
+8. [Building A Machine Learning Model With Spark ML](#schema8)
+8. [Inspect the Model Co-efficients](#schema9)
 
 <hr>
 
@@ -274,3 +276,32 @@ scaled_df = standardScaler.fit(assembler_df).transform(assembler_df)
 <a name="schema8"></a>
 
 # 8. Building A Machine Learning Model With Spark ML
+
+With all the preprocessing done, it's finally time to start building our Linear Regression model! Just like always, we first need to split the data into training and test sets. Luckily, this is no issue with the `randomSplit()` method:
+```
+train_data, test_data = scaled_df.randomSplit([.8,.2], seed = rnd_seed)
+```
+ElasticNet is a linear regression model trained with L1 and L2 prior as regularizer. This combination allows for learning a sparse model where few of the weights are non-zero like Lasso, while still maintaining the regularization properties of Ridge. We control the convex combination of L1 and L2 using the l1_ratio parameter.
+
+Elastic-net is useful when there are multiple features which are correlated with one another. Lasso is likely to pick one of these at random, while elastic-net is likely to pick both.
+
+A practical advantage of trading-off between Lasso and Ridge is it allows Elastic-Net to inherit some of Ridge’s stability under rotation.
+
+![img](./img/house2.png)
+ 
+http://scikit-learn.org/stable/modules/linear_model.html#elastic-net
+
+```
+lr = (LinearRegression(featuresCol='features_scaled',labelCol="medhv",predictionCol='predmedhv',
+                      maxIter = 10, regParam = 0.3, elasticNetParam = 0.8,standardization = False))
+```
+
+```
+linearModel = lr.fit(train_data)
+```
+
+<hr>
+
+<a name="schema9"></a>
+
+# 9. Inspect the Model Co-efficients
